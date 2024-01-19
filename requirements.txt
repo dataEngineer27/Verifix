@@ -1,0 +1,9 @@
+python-multipart
+SQLAlchemy
+pytz
+requests
+python-dotenv
+alembic
+psycopg2-binary
+psycopg2
+xmltodict
