@@ -22,3 +22,13 @@ def division_list(credentials, body, headers):
                              headers=headers)
     data_json = response.json()
     return data_json
+
+
+def timesheet_list(credentials, body, headers):
+    url = f"{BASE_URL}/core/timesheet$export"
+    response = requests.post(url=url, data=body, auth=HTTPBasicAuth(username=credentials['username'],
+                                                                    password=credentials['password']),
+                             headers=headers)
+    data_json = response.json()
+    return data_json
+
