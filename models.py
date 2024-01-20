@@ -25,8 +25,19 @@ class Employees(Base):
     address = Column(Text, nullable=True)
     tin = Column(String, nullable=True)
     iapa = Column(String, nullable=True)
-    npin = Column(BIGINT, nullable=True)
+    npin = Column(String, nullable=True)
     state = Column(String, nullable=True)
     has_identification_photo = Column(String, nullable=True)
     last_update = Column(DateTime(timezone=True), default=func.now())
 
+
+class Divisions(Base):
+    __tablename__ = 'divisions'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=True)
+    parent_id = Column(Integer, nullable=True)
+    opened_date = Column(Date, nullable=True)
+    closed_date = Column(Date, nullable=True)
+    code = Column(String, nullable=True)
+    state = Column(String, nullable=True)
+    last_update = Column(DateTime(timezone=True), default=func.now())
