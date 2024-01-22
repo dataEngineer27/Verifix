@@ -1,39 +1,64 @@
 from datetime import datetime
-
+import re
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 import models
 from sqlalchemy.exc import IntegrityError
 
 
-def add_timesheet(db: Session, timesheet_list):
-    timesheet_list = timesheet_list
-    i = 0
-    for division in timesheet_list:
-        i += 1
-        id = division['division_id'] if 'division_id' in division and division['division_id'] else None
-        name = division['name'] if 'name' in division and division['name'] else None
-        parent_id = division['parent_id'] if 'parent_id' in division and division['parent_id'] else None
-        opened_date = division['opened_date'] if 'opened_date' in division and division['opened_date'] else None
-        closed_date = division['closed_date'] if 'closed_date' in division and division['closed_date'] else None
-        code = division['code'] if 'code' in division and division['code'] else None
-        state = division['state'] if 'state' in division and division['state'] else None
-        query = models.Divisions(id=id,
-                                 name=name,
-                                 parent_id=parent_id,
-                                 opened_date=datetime.strptime(opened_date, "%d.%m.%Y").date() if opened_date else None,
-                                 closed_date=datetime.strptime(closed_date, "%d.%m.%Y").date() if closed_date else None,
-                                 code=code,
-                                 state=state
+def add_employee_timesheets(db: Session, employee_timesheets):
+    staff_id = employee_timesheets['staff_id'] if ('staff_id' in employee_timesheets and
+                                                   employee_timesheets['staff_id']) else None
+    employee_id = employee_timesheets['employee_id'] if ('employee_id' in employee_timesheets and
+                                                         employee_timesheets['employee_id']) else None
+    for item in employee_timesheets["days"]:
+        date = item['date'] if 'date' in item and item['date'] else None
+        day_kind = item['day_kind'] if 'day_kind' in item and item['day_kind'] else None
+        plan_time = item['plan_time'] if 'plan_time' in item and item['plan_time'] else None
+        done_marks = item['done_marks'] if 'done_marks' in item and item['done_marks'] else None
+        planned_marks = item['planned_marks'] if 'planned_marks' in item and item['planned_marks'] else None
+        begin_time = item['begin_time'] if 'begin_time' in item and item['begin_time'] else None
+        begin_time = datetime.strptime(begin_time, "%d.%m.%Y %H:%M:%S") if begin_time and ":" in begin_time \
+            else datetime.strptime(begin_time, "%d.%m.%Y") if begin_time else None
+        end_time = item['end_time'] if 'end_time' in item and item['end_time'] else None
+        end_time = datetime.strptime(end_time, "%d.%m.%Y %H:%M:%S") if end_time and ":" in end_time \
+            else datetime.strptime(end_time, "%d.%m.%Y") if end_time else None
+        break_begin_time = item['break_begin_time'] if 'break_begin_time' in item and item['break_begin_time'] else None
+        break_begin_time = datetime.strptime(break_begin_time, "%d.%m.%Y %H:%M:%S") if break_begin_time and ":" in break_begin_time \
+            else datetime.strptime(break_begin_time, "%d.%m.%Y") if break_begin_time else None
+        break_end_time = item['break_end_time'] if 'break_end_time' in item and item['break_end_time'] else None
+        break_end_time = datetime.strptime(break_end_time, "%d.%m.%Y %H:%M:%S") if break_end_time and ":" in break_end_time \
+            else datetime.strptime(break_end_time, "%d.%m.%Y") if break_end_time else None
+        input_time = item['input_time'] if 'input_time' in item and item['input_time'] else None
+        input_time = datetime.strptime(input_time, "%d.%m.%Y %H:%M:%S") if input_time and ":" in input_time \
+            else datetime.strptime(input_time, "%d.%m.%Y") if input_time else None
+        output_time = item['output_time'] if 'output_time' in item and item['output_time'] else None
+        output_time = datetime.strptime(output_time, "%d.%m.%Y %H:%M:%S") if output_time and ":" in output_time \
+            else datetime.strptime(output_time, "%d.%m.%Y") if output_time else None
+        facts = item['facts'] if 'facts' in item and item['facts'] else None
+        query = models.Timesheet(staff_id=staff_id,
+                                 employee_id=employee_id,
+                                 date=datetime.strptime(date, "%d.%m.%Y").date() if date else None,
+                                 day_kind=day_kind,
+                                 plan_time=plan_time,
+                                 done_marks=done_marks,
+                                 planned_marks=planned_marks,
+                                 begin_time=begin_time,
+                                 end_time=end_time,
+                                 break_begin_time=break_begin_time,
+                                 break_end_time=break_end_time,
+                                 input_time=input_time,
+                                 output_time=output_time,
+                                 facts=facts
                                  )
         try:
             db.add(query)
             db.commit()
-            print(f"Was inserted {i}-division:  {name}")
-        except IntegrityError as e:
-            print(f"Was occured error on {i}-division\n{e}")
+            print(f"Was inserted employee-{employee_id}:  {date}")
+        except Exception as e:
+            print(f"Was occured error on employee-{employee_id}-{date}\n{e}")
             db.rollback()
-    print("Length of divisions: ", len(timesheet_list))
+    print(f"Length of employee-{employee_id}: ", len(employee_timesheets["days"]))
 
 
 def add_divisions(db: Session, division_list):
@@ -136,88 +161,88 @@ def add_employees(db: Session, employee_list):
             db.rollback()  # Rollback the transaction
 
 
-def get_product(db: Session, id):
-    query = db.query(models.Nomenclatures).get(id)
-    return query
-
-
-def get_all_departments(db: Session):
-    query = db.query(models.Departments).all()
-    return query
-
-
-def get_all_shifts(db: Session):
-    query = db.query(models.ShiftList).all()
-    return query
-
-
-def get_all_stores(db: Session):
-    query = db.query(models.Stores).all()
-    return query
-
-
-def get_payment_item(db: Session, shift_id, payment_id, nomenclature_id):
-    payment_item = db.query(models.Payments).filter(and_(models.Payments.shift_id == shift_id,
-                                                         models.Payments.payment_id == payment_id,
-                                                         models.Payments.nomenclature_id == nomenclature_id)
-                                                    ).first()
-    return payment_item
-
-
-def get_store_remaining_item(db: Session, store_id, nomenclature_id, datetime):
-    remaining_item = db.query(models.StoreRemains).filter(and_(models.StoreRemains.store_id == store_id,
-                                                               models.StoreRemains.nomenclature_id == nomenclature_id,
-                                                               models.StoreRemains.datetime == datetime)
-                                                          ).first()
-    return remaining_item
-
-
-def get_store_incoming_item(db: Session, store_name, nomenclature_id, doc_number):
-    incoming_item = db.query(models.StoreIncomings).filter(and_(models.StoreIncomings.store_name == store_name,
-                                                                models.StoreIncomings.nomenclature_id == nomenclature_id,
-                                                                models.StoreIncomings.doc_number == doc_number)
-                                                           ).first()
-    return incoming_item
-
-
-def get_revenue_item(db: Session, date, department_id, nomenclature_id):
-    revenue_item = db.query(models.DepartmentRevenue).filter(and_(models.DepartmentRevenue.date == date,
-                                                                  models.DepartmentRevenue.department_id == department_id,
-                                                                  models.DepartmentRevenue.nomenclature_id == nomenclature_id)
-                                                             ).first()
-    return revenue_item
-
-
-def get_last_added_payment(db: Session):
-    last_payment = db.query(models.Payments).order_by(models.Payments.last_update.desc()).first()
-    # last_added_shift = last_payment.shift_id
-    return last_payment
-
-
-def get_last_added_incoming(db: Session):
-    last_incoming = db.query(models.StoreIncomings).order_by(models.StoreIncomings.last_update.desc()).first()
-    return last_incoming
-
-
-def get_last_added_store_remaining(db: Session):
-    last_item = db.query(models.StoreRemains).order_by(models.StoreRemains.last_update.desc()).first()
-    return last_item
-
-
-def update_department(db: Session, id):
-    obj = db.query(models.Departments).get(id)
-    obj.is_added = 1
-    db.commit()
-
-
-def update_all_departments_is_added(db: Session, departments):
-    for department in departments:
-        obj = db.query(models.Departments).get(department.id)
-        obj.is_added = 0
-        db.commit()
-
-
-def update_shift(db: Session, id):
-    obj = db.query(models.ShiftList).get(id)
-    obj.is_added = 1
-    db.commit()
+# def get_product(db: Session, id):
+#     query = db.query(models.Nomenclatures).get(id)
+#     return query
+#
+#
+# def get_all_departments(db: Session):
+#     query = db.query(models.Departments).all()
+#     return query
+#
+#
+# def get_all_shifts(db: Session):
+#     query = db.query(models.ShiftList).all()
+#     return query
+#
+#
+# def get_all_stores(db: Session):
+#     query = db.query(models.Stores).all()
+#     return query
+#
+#
+# def get_payment_item(db: Session, shift_id, payment_id, nomenclature_id):
+#     payment_item = db.query(models.Payments).filter(and_(models.Payments.shift_id == shift_id,
+#                                                          models.Payments.payment_id == payment_id,
+#                                                          models.Payments.nomenclature_id == nomenclature_id)
+#                                                     ).first()
+#     return payment_item
+#
+#
+# def get_store_remaining_item(db: Session, store_id, nomenclature_id, datetime):
+#     remaining_item = db.query(models.StoreRemains).filter(and_(models.StoreRemains.store_id == store_id,
+#                                                                models.StoreRemains.nomenclature_id == nomenclature_id,
+#                                                                models.StoreRemains.datetime == datetime)
+#                                                           ).first()
+#     return remaining_item
+#
+#
+# def get_store_incoming_item(db: Session, store_name, nomenclature_id, doc_number):
+#     incoming_item = db.query(models.StoreIncomings).filter(and_(models.StoreIncomings.store_name == store_name,
+#                                                                 models.StoreIncomings.nomenclature_id == nomenclature_id,
+#                                                                 models.StoreIncomings.doc_number == doc_number)
+#                                                            ).first()
+#     return incoming_item
+#
+#
+# def get_revenue_item(db: Session, date, department_id, nomenclature_id):
+#     revenue_item = db.query(models.DepartmentRevenue).filter(and_(models.DepartmentRevenue.date == date,
+#                                                                   models.DepartmentRevenue.department_id == department_id,
+#                                                                   models.DepartmentRevenue.nomenclature_id == nomenclature_id)
+#                                                              ).first()
+#     return revenue_item
+#
+#
+# def get_last_added_payment(db: Session):
+#     last_payment = db.query(models.Payments).order_by(models.Payments.last_update.desc()).first()
+#     # last_added_shift = last_payment.shift_id
+#     return last_payment
+#
+#
+# def get_last_added_incoming(db: Session):
+#     last_incoming = db.query(models.StoreIncomings).order_by(models.StoreIncomings.last_update.desc()).first()
+#     return last_incoming
+#
+#
+# def get_last_added_store_remaining(db: Session):
+#     last_item = db.query(models.StoreRemains).order_by(models.StoreRemains.last_update.desc()).first()
+#     return last_item
+#
+#
+# def update_department(db: Session, id):
+#     obj = db.query(models.Departments).get(id)
+#     obj.is_added = 1
+#     db.commit()
+#
+#
+# def update_all_departments_is_added(db: Session, departments):
+#     for department in departments:
+#         obj = db.query(models.Departments).get(department.id)
+#         obj.is_added = 0
+#         db.commit()
+#
+#
+# def update_shift(db: Session, id):
+#     obj = db.query(models.ShiftList).get(id)
+#     obj.is_added = 1
+#     db.commit()

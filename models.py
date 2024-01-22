@@ -71,8 +71,8 @@ class Timesheet(Base):
     end_time = Column(DateTime, nullable=True)
     break_begin_time = Column(DateTime, nullable=True)
     break_end_time = Column(DateTime, nullable=True)
-    input_time = Column(DateTime, nullable=False)
-    output_time = Column(DateTime, nullable=False)
+    input_time = Column(DateTime, nullable=True)
+    output_time = Column(DateTime, nullable=True)
     facts = Column(ARRAY(JSON), nullable=True)
     last_update = Column(DateTime(timezone=True), default=func.now())
 

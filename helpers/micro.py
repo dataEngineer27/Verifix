@@ -7,8 +7,8 @@ from helpers.config import BASE_URL
 
 
 def employee_list(credentials, body, headers):
-    url = f"{BASE_URL}/core/employee$list"
-    response = requests.post(url=url, data=body, auth=HTTPBasicAuth(username=credentials['username'],
+    url = f"{BASE_URL}/pro/employee$list"
+    response = requests.post(url=url, json=body, auth=HTTPBasicAuth(username=credentials['username'],
                                                                     password=credentials['password']),
                              headers=headers)
     data_json = response.json()
@@ -17,7 +17,7 @@ def employee_list(credentials, body, headers):
 
 def division_list(credentials, body, headers):
     url = f"{BASE_URL}/core/division$list"
-    response = requests.post(url=url, data=body, auth=HTTPBasicAuth(username=credentials['username'],
+    response = requests.post(url=url, json=body, auth=HTTPBasicAuth(username=credentials['username'],
                                                                     password=credentials['password']),
                              headers=headers)
     data_json = response.json()
@@ -26,7 +26,7 @@ def division_list(credentials, body, headers):
 
 def timesheet_list(credentials, body, headers):
     url = f"{BASE_URL}/core/timesheet$export"
-    response = requests.post(url=url, data=body, auth=HTTPBasicAuth(username=credentials['username'],
+    response = requests.post(url=url, json=body, auth=HTTPBasicAuth(username=credentials['username'],
                                                                     password=credentials['password']),
                              headers=headers)
     data_json = response.json()
