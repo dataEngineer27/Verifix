@@ -42,7 +42,7 @@ class Employees(Base):
     employee_kind_name = Column(String, nullable=True)
     employee_state = Column(String, nullable=True)
     fte_id = Column(Integer, nullable=True)
-    last_update = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), default=func.now())
 
 
 class Divisions(Base):
@@ -54,7 +54,7 @@ class Divisions(Base):
     closed_date = Column(Date, nullable=True)
     code = Column(String, nullable=True)
     state = Column(String, nullable=True)
-    last_update = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), default=func.now())
 
 
 class Timesheet(Base):
@@ -74,5 +74,22 @@ class Timesheet(Base):
     input_time = Column(DateTime, nullable=True)
     output_time = Column(DateTime, nullable=True)
     facts = Column(ARRAY(JSON), nullable=True)
-    last_update = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), default=func.now())
 
+
+class EmployeeRental(Base):
+    __tablename__ = 'employee_rental'
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    date = Column(Date, nullable=True)
+    employee_id = Column(Integer, nullable=True)
+    division_id = Column(Integer, nullable=True)
+    updated_at = Column(DateTime(timezone=True), default=func.now())
+
+
+class Standards(Base):
+    __tablename__ = 'standards'
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    date = Column(Date, nullable=True)
+    division_id = Column(Integer, nullable=True)
+    standard = Column(Integer, nullable=True)
+    updated_at = Column(DateTime(timezone=True), default=func.now())
